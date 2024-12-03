@@ -1,51 +1,81 @@
 class SongsController < ApplicationController
+  skip_before_action :verify_authenticity_token
+
   @@mutex = Mutex.new
 
   def index
     @songs = Song.all
-    render json: @songs
   end
 
   def show
     @song = Song.find(params[:id])
-    render json: @song
+  end
+
+  def new
+    @song = Song.new
   end
 
   def create
     @song = Song.new(song_params)
     if @song.save
-      render json: { status: "success", message: "Song added successfully.", song: @song }
+      redirect_to @song, notice: "Song added successfully."
     else
-      render json: { status: "error", message: "Failed to add song." }
+      render :new, alert: "Failed to add song."
     end
   end
 
   def create_multiple
     threads = []
-    songs_params.each do |song_param|
+    sample_songs = [
+      { title: "Song A", artist: "Artist A", album: "Album A", duration: 180, genre: "Rock" },
+      { title: "Song B", artist: "Artist B", album: "Album B", duration: 210, genre: "Pop" },
+      { title: "Song C", artist: "Artist C", album: "Album C", duration: 240, genre: "Jazz" }
+    ]
+
+    sample_songs.each do |song_param|
       threads << Thread.new do
         create_song(song_param)
       end
     end
     threads.each(&:join)
-    render json: { status: "success", message: "Songs added successfully." }
+    redirect_to root_path, notice: "Multiple songs added successfully."
+  end
+
+  def edit
+    @song = Song.find(params[:id])
   end
 
   def update
     @@mutex.synchronize do
       @song = Song.find(params[:id])
       if @song.update(song_params)
-        render json: { status: "success", message: "Song updated successfully.", song: @song }
+        redirect_to @song, notice: "Song updated successfully."
       else
-        render json: { status: "error", message: "Failed to update song." }
+        render :edit, alert: "Failed to update song."
       end
     end
+  end
+
+  def update_multiple
+    threads = []
+    selected_song_ids = params[:songs] || []
+
+    selected_song_ids.each do |song_id|
+      threads << Thread.new do
+        @@mutex.synchronize do
+          song = Song.find(song_id)
+          song.update(title: "#{song.title} - Updated")
+        end
+      end
+    end
+    threads.each(&:join)
+    redirect_to songs_path, notice: "Selected songs updated successfully."
   end
 
   def destroy
     @song = Song.find(params[:id])
     @song.destroy
-    render json: { status: "success", message: "Song deleted successfully." }
+    redirect_to songs_path, notice: "Song deleted successfully."
   end
 
   private

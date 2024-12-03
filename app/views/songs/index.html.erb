@@ -1,0 +1,41 @@
+<div class="container mt-4">
+  <h1 class="mb-4">List of Songs</h1>
+
+  <%= link_to 'Add New Song', new_song_path, class: "btn btn-primary mb-3" %>
+  <%= button_to 'Add Multiple Songs', create_multiple_songs_path, method: :post, data: { confirm: 'Do you want to add multiple songs automatically?' }, class: "btn btn-secondary mb-3" %>
+
+  <%= form_with url: update_multiple_songs_path, method: :put, data: { turbo: false } do %>
+    <table class="table table-striped table-bordered">
+      <thead class="thead-dark">
+        <tr>
+          <th>Select</th>
+          <th>Title</th>
+          <th>Artist</th>
+          <th>Album</th>
+          <th>Duration</th>
+          <th>Genre</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @songs.each do |song| %>
+          <tr>
+            <td><%= check_box_tag "songs[]", song.id %></td>
+            <td><%= song.title %></td>
+            <td><%= song.artist %></td>
+            <td><%= song.album %></td>
+            <td><%= song.duration %> seconds</td>
+            <td><%= song.genre %></td>
+            <td>
+              <%= link_to 'Show', song_path(song), class: "btn btn-info btn-sm" %>
+              <%= link_to 'Edit', edit_song_path(song), class: "btn btn-warning btn-sm" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+    <div>
+      <%= submit_tag "Update Selected Songs", data: { confirm: 'Are you sure you want to update the selected songs?' }, class: "btn btn-success" %>
+    </div>
+  <% end %>
+</div>

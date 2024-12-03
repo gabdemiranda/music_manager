@@ -1,0 +1,11 @@
+<h1><%= @song.title %> by <%= @song.artist %></h1>
+
+<p>
+  <strong>Album:</strong> <%= @song.album %><br>
+  <strong>Duration:</strong> <%= @song.duration %> seconds<br>
+  <strong>Genre:</strong> <%= @song.genre %>
+</p>
+
+<%= link_to 'Edit', edit_song_path(@song) %> |
+<%= button_to 'Delete', song_path(@song), method: :delete, data: { confirm: 'Are you sure?' }, form: { data: { turbo: false } } %> |
+<%= link_to 'Back to List', songs_path %>
